@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>MoneyLens — Control de dinero</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --primary: #6c5ce7;
+      --primary-dark: #5848d6;
+      --green: #20bf6b;
+      --red: #eb4d4b;
+      --yellow: #f7b731;
+      --background: #f6f7fb;
+      --card: #ffffff;
+      --text: #202124;
+      --muted: #777b87;
+      --border: #e8e9ef;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* NAVBAR */
+
+    nav {
+      height: 70px;
+      background: white;
+      border-bottom: 1px solid var(--border);
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding: 0 6%;
+
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .logo span {
+      color: var(--primary);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .currency {
+      border: 1px solid var(--border);
+      background: white;
+      padding: 9px 12px;
+      border-radius: 10px;
+    }
+
+    /* MAIN */
+
+    main {
+      width: 90%;
+      max-width: 1200px;
+      margin: auto;
+      padding: 40px 0 80px;
+    }
+
+    .welcome {
+      margin-bottom: 30px;
+    }
+
+    .welcome h1 {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+
+    .welcome p {
+      color: var(--muted);
+    }
+
+    /* BALANCE */
+
+    .balance-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 25px;
+    }
+
+    .balance-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 25px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.04);
+    }
+
+    .balance-card.main {
+      background: linear-gradient(
+        135deg,
+        #6c5ce7,
+        #8e7cf0
+      );
+      color: white;
+    }
+
+    .balance-label {
+      font-size: 14px;
+      opacity: .75;
+      margin-bottom: 12px;
+    }
+
+    .balance {
+      font-size: 38px;
+      font-weight: 800;
+    }
+
+    .small-value {
+      font-size: 25px;
+      font-weight: 700;
+    }
+
+    /* ACTIONS */
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 30px;
+    }
+
+    .action-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 25px;
+
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .action-icon {
+      width: 55px;
+      height: 55px;
+
+      border-radius: 16px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 25px;
+      background: #eeeaff;
+    }
+
+    .action-card h3 {
+      margin-bottom: 6px;
+    }
+
+    .action-card p {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .primary-button {
+      background: var(--primary);
+      color: white;
+      padding: 11px 17px;
+      border-radius: 11px;
+    }
+
+    .primary-button:hover {
+      background: var(--primary-dark);
+    }
+
+    .secondary-button {
+      background: #f0efff;
+      color: var(--primary);
+      padding: 11px 17px;
+      border-radius: 11px;
+    }
+
+    /* CONTENT */
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 20px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 25px;
+    }
+
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .panel-title h2 {
+      font-size: 21px;
+    }
+
+    /* EXPENSES */
+
+    .expense {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding: 15px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .expense:last-child {
+      border-bottom: none;
+    }
+
+    .expense-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .expense-icon {
+      width: 45px;
+      height: 45px;
+
+      border-radius: 12px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background: #f1f2f6;
+      font-size: 20px;
+    }
+
+    .expense-name {
+      font-weight: 700;
+    }
+
+    .expense-category {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 3px;
+    }
+
+    .expense-price {
+      font-weight: 700;
+      color: var(--red);
+    }
+
+    /* PURCHASES */
+
+    .purchase {
+      padding: 16px;
+      background: #f8f8fc;
+      border-radius: 15px;
+      margin-bottom: 12px;
+    }
+
+    .purchase-top {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+
+    .purchase-price {
+      font-weight: 800;
+    }
+
+    .purchase p {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* MODAL */
+
+    .modal {
+      position: fixed;
+      inset: 0;
+
+      background: rgba(0,0,0,.55);
+
+      display: none;
+      align-items: center;
+      justify-content: center;
+
+      padding: 20px;
+      z-index: 200;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: white;
+      width: 100%;
+      max-width: 500px;
+
+      border-radius: 24px;
+      padding: 30px;
+
+      position: relative;
+    }
+
+    .close {
+      position: absolute;
+      right: 20px;
+      top: 18px;
+
+      background: #f1f2f6;
+
+      width: 35px;
+      height: 35px;
+
+      border-radius: 50%;
+
+      font-size: 20px;
+    }
+
+    .modal-box h2 {
+      margin-bottom: 8px;
+    }
+
+    .modal-description {
+      color: var(--muted);
+      margin-bottom: 25px;
+    }
+
+    /* UPLOAD */
+
+    .upload-area {
+      border: 2px dashed #cfd0db;
+      border-radius: 18px;
+
+      padding: 35px 20px;
+
+      text-align: center;
+
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .upload-area:hover {
+      border-color: var(--primary);
+      background: #faf9ff;
+    }
+
+    .upload-icon {
+      font-size: 45px;
+      margin-bottom: 10px;
+    }
+
+    .upload-area p {
+      color: var(--muted);
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    #receiptInput {
+      display: none;
+    }
+
+    .preview {
+      width: 100%;
+      max-height: 250px;
+      object-fit: contain;
+
+      margin-top: 20px;
+
+      border-radius: 15px;
+
+      display: none;
+    }
+
+    /* FORM */
+
+    .form {
+      margin-top: 20px;
+      display: none;
+    }
+
+    .form.show {
+      display: block;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 7px;
+    }
+
+    .input-group input,
+    .input-group select {
+      width: 100%;
+
+      padding: 13px;
+
+      border: 1px solid var(--border);
+      border-radius: 11px;
+
+      outline: none;
+      font-size: 15px;
+    }
+
+    .input-group input:focus,
+    .input-group select:focus {
+      border-color: var(--primary);
+    }
+
+    .save-button {
+      width: 100%;
+      padding: 14px;
+
+      border-radius: 12px;
+
+      background: var(--green);
+      color: white;
+
+      font-size: 15px;
+    }
+
+    /* RESPONSIVE */
+
+    @media(max-width: 850px) {
+
+      .balance-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .balance {
+        font-size: 32px;
+      }
+    }
+
+    @media(max-width: 600px) {
+
+      nav {
+        padding: 0 20px;
+      }
+
+      main {
+        width: 92%;
+        padding-top: 25px;
+      }
+
+      .welcome h1 {
+        font-size: 29px;
+      }
+
+      .panel,
+      .balance-card,
+      .action-card {
+        padding: 20px;
+      }
+
+      .balance {
+        font-size: 30px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+
+  <nav>
+
+    <div class="logo">
+      Money<span>Lens</span>
+    </div>
+
+    <div class="nav-right">
+
+      <select class="currency" id="currency">
+        <option value="$">$</option>
+        <option value="€">€</option>
+        <option value="U$S">U$S</option>
+      </select>
+
+    </div>
+
+  </nav>
+
+
+  <main>
+
+    <!-- WELCOME -->
+
+    <section class="welcome">
+
+      <h1>Tu dinero, bajo control.</h1>
+
+      <p>
+        Registrá tus gastos y descubrí cuánto podés gastar.
+      </p>
+
+    </section>
+
+
+    <!-- BALANCE -->
+
+    <section class="balance-grid">
+
+      <div class="balance-card main">
+
+        <div class="balance-label">
+          Dinero disponible
+        </div>
+
+        <div class="balance" id="balance">
+          $ 50.000
+        </div>
+
+      </div>
+
+
+      <div class="balance-card">
+
+        <div class="balance-label">
+          Gastado este mes
+        </div>
+
+        <div class="small-value" id="totalExpenses">
+          $ 0
+        </div>
+
+      </div>
+
+
+      <div class="balance-card">
+
+        <div class="balance-label">
+          Presupuesto mensual
+        </div>
+
+        <div class="small-value">
+          $ 50.000
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ACTIONS -->
+
+    <section class="actions">
+
+      <div class="action-card">
+
+        <div class="action-icon">
+          📸
+        </div>
+
+        <div>
+
+          <h3>Escanear factura</h3>
+
+          <p>
+            Sacale una foto a tu ticket y registrá el gasto.
+          </p>
+
+          <button
+            class="primary-button"
+            onclick="openReceiptModal()">
+
+            Escanear factura
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="action-card">
+
+        <div class="action-icon">
+          ➕
+        </div>
+
+        <div>
+
+          <h3>Agregar gasto</h3>
+
+          <p>
+            Registrá manualmente un gasto.
+          </p>
+
+          <button
+            class="secondary-button"
+            onclick="openManualModal()">
+
+            Agregar gasto
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- CONTENT -->
+
+    <section class="content-grid">
+
+
+      <!-- EXPENSES -->
+
+      <div class="panel">
+
+        <div class="panel-title">
+
+          <h2>Últimos gastos</h2>
+
+        </div>
+
+        <div id="expensesList">
+
+          <div class="expense">
+
+            <div class="expense-left">
+
+              <div class="expense-icon">
+                🛒
+              </div>
+
+              <div>
+
+                <div class="expense-name">
+                  Supermercado
+                </div>
+
+                <div class="expense-category">
+                  Alimentación
+                </div>
+
+              </div>
+
+            </div>
+
+            <div class="expense-price">
+              - $ 8.500
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- WHAT CAN I BUY -->
+
+      <div class="panel">
+
+        <div class="panel-title">
+
+          <h2>🛍️ ¿Qué puedo comprar?</h2>
+
+        </div>
+
+
+        <div class="purchase">
+
+          <div class="purchase-top">
+
+            <strong>
+              🎧 Auriculares
+            </strong>
+
+            <span class="purchase-price">
+              $ 12.000
+            </span>
+
+          </div>
+
+          <p>
+            Después de comprarlo te quedarían $ 38.000.
+          </p>
+
+        </div>
+
+
+        <div class="purchase">
+
+          <div class="purchase-top">
+
+            <strong>
+              👟 Zapatillas
+            </strong>
+
+            <span class="purchase-price">
+              $ 18.000
+            </span>
+
+          </div>
+
+          <p>
+            Después de comprarlo te quedarían $ 32.000.
+          </p>
+
+        </div>
+
+
+        <div class="purchase">
+
+          <div class="purchase-top">
+
+            <strong>
+              👕 Remera
+            </strong>
+
+            <span class="purchase-price">
+              $ 8.000
+            </span>
+
+          </div>
+
+          <p>
+            Después de comprarla te quedarían $ 42.000.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- RECEIPT MODAL -->
+
+  <div class="modal" id="receiptModal">
+
+    <div class="modal-box">
+
+      <button
+        class="close"
+        onclick="closeModals()">
+        ×
+      </button>
+
+      <h2>📸 Escanear factura</h2>
+
+      <p class="modal-description">
+        Subí una foto de tu factura o ticket.
+      </p>
+
+
+      <label class="upload-area" for="receiptInput">
+
+        <div class="upload-icon">
+          📷
+        </div>
+
+        <strong>
+          Elegir foto
+        </strong>
+
+        <p>
+          JPG, PNG o foto tomada con tu celular
+        </p>
+
+      </label>
+
+      <input
+        type="file"
+        id="receiptInput"
+        accept="image/*"
+        capture="environment"
+      >
+
+
+      <img
+        id="preview"
+        class="preview"
+        alt="Vista previa de la factura"
+      >
+
+
+      <div class="form" id="receiptForm">
+
+        <div class="input-group">
+
+          <label>
+            Comercio
+          </label>
+
+          <input
+            id="store"
+            placeholder="Ej: Supermercado"
+          >
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label>
+            Total de la factura
+          </label>
+
+          <input
+            id="amount"
+            type="number"
+            placeholder="Ej: 8500"
+          >
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label>
+            Categoría
+          </label>
+
+          <select id="category">
+
+            <option>
+              Alimentación
+            </option>
+
+            <option>
+              Transporte
+            </option>
+
+            <option>
+              Ropa
+            </option>
+
+            <option>
+              Entretenimiento
+            </option>
+
+            <option>
+              Hogar
+            </option>
+
+            <option>
+              Otros
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <button
+          class="save-button"
+          onclick="saveReceipt()">
+
+          Guardar gasto
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- MANUAL MODAL -->
+
+  <div class="modal" id="manualModal">
+
+    <div class="modal-box">
+
+      <button
+        class="close"
+        onclick="closeModals()">
+        ×
+      </button>
+
+      <h2>➕ Agregar gasto</h2>
+
+      <p class="modal-description">
+        Registrá un gasto manualmente.
+      </p>
+
+
+      <div class="input-group">
+
+        <label>
+          Nombre
+        </label>
+
+        <input
+          id="manualName"
+          placeholder="Ej: Cena"
+        >
+
+      </div>
+
+
+      <div class="input-group">
+
+        <label>
+          Precio
+        </label>
+
+        <input
+          id="manualAmount"
+          type="number"
+          placeholder="Ej: 2500"
+        >
+
+      </div>
+
+
+      <div class="input-group">
+
+        <label>
+          Categoría
+        </label>
+
+        <select id="manualCategory">
+
+          <option>
+            Alimentación
+          </option>
+
+          <option>
+            Transporte
+          </option>
+
+          <option>
+            Ropa
+          </option>
+
+          <option>
+            Entretenimiento
+          </option>
+
+          <option>
+            Hogar
+          </option>
+
+          <option>
+            Otros
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <button
+        class="save-button"
+        onclick="saveManualExpense()">
+
+        Guardar gasto
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <script>
+
+    /* =========================================
+       CONFIGURACIÓN
+    ========================================= */
+
+    let balance = 50000;
+
+    let expenses = [];
+
+
+    /* =========================================
+       ELEMENTOS
+    ========================================= */
+
+    const balanceElement =
+      document.getElementById("balance");
+
+    const totalExpensesElement =
+      document.getElementById("totalExpenses");
+
+    const expensesList =
+      document.getElementById("expensesList");
+
+
+    /* =========================================
+       ACTUALIZAR DINERO
+    ========================================= */
+
+    function updateMoney() {
+
+      let total = 0;
+
+      expenses.forEach(expense => {
+
+        total += expense.amount;
+
+      });
+
+      const available =
+        balance - total;
+
+      balanceElement.textContent =
+        "$ " + available.toLocaleString("es-AR");
+
+      totalExpensesElement.textContent =
+        "$ " + total.toLocaleString("es-AR");
+
+    }
+
+
+    /* =========================================
+       AGREGAR GASTO
+    ========================================= */
+
+    function addExpense(name, amount, category) {
+
+      expenses.push({
+
+        name: name,
+
+        amount: Number(amount),
+
+        category: category
+
+      });
+
+      renderExpenses();
+
+      updateMoney();
+
+    }
+
+
+    /* =========================================
+       MOSTRAR GASTOS
+    ========================================= */
+
+    function renderExpenses() {
+
+      expensesList.innerHTML = "";
+
+      expenses.forEach(expense => {
+
+        const div =
+          document.createElement("div");
+
+        div.className = "expense";
+
+        div.innerHTML = `
+
+          <div class="expense-left">
+
+            <div class="expense-icon">
+              💸
+            </div>
+
+            <div>
+
+              <div class="expense-name">
+                ${expense.name}
+              </div>
+
+              <div class="expense-category">
+                ${expense.category}
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="expense-price">
+            - $ ${expense.amount.toLocaleString("es-AR")}
+          </div>
+
+        `;
+
+        expensesList.appendChild(div);
+
+      });
+
+    }
+
+
+    /* =========================================
+       MODAL FACTURA
+    ========================================= */
+
+    function openReceiptModal() {
+
+      document
+        .getElementById("receiptModal")
+        .classList.add("active");
+
+    }
+
+
+    /* =========================================
+       MODAL MANUAL
+    ========================================= */
+
+    function openManualModal() {
+
+      document
+        .getElementById("manualModal")
+        .classList.add("active");
+
+    }
+
+
+    /* =========================================
+       CERRAR MODALES
+    ========================================= */
+
+    function closeModals() {
+
+      document
+        .querySelectorAll(".modal")
+        .forEach(modal => {
+
+          modal.classList.remove("active");
+
+        });
+
+    }
+
+
+    /* =========================================
+       PREVISUALIZAR FACTURA
+    ========================================= */
+
+    document
+      .getElementById("receiptInput")
+      .addEventListener("change", function(event) {
+
+        const file =
+          event.target.files[0];
+
+        if (!file) return;
+
+        const reader =
+          new FileReader();
+
+        reader.onload = function(e) {
+
+          const preview =
+            document.getElementById("preview");
+
+          preview.src =
+            e.target.result;
+
+          preview.style.display =
+            "block";
+
+
+          document
+            .getElementById("receiptForm")
+            .classList.add("show");
+
+        };
+
+        reader.readAsDataURL(file);
+
+      });
+
+
+    /* =========================================
+       GUARDAR FACTURA
+    ========================================= */
+
+    function saveReceipt() {
+
+      const store =
+        document.getElementById("store").value;
+
+      const amount =
+        Number(
+          document.getElementById("amount").value
+        );
+
+      const category =
+        document.getElementById("category").value;
+
+
+      if (!store || !amount) {
+
+        alert(
+          "Completá el comercio y el total."
+        );
+
+        return;
+
+      }
+
+
+      addExpense(
+        store,
+        amount,
+        category
+      );
+
+
+      alert(
+        "Factura guardada correctamente."
+      );
+
+
+      closeModals();
+
+    }
+
+
+    /* =========================================
+       GUARDAR GASTO MANUAL
+    ========================================= */
+
+    function saveManualExpense() {
+
+      const name =
+        document.getElementById("manualName").value;
+
+      const amount =
+        Number(
+          document.getElementById("manualAmount").value
+        );
+
+      const category =
+        document.getElementById("manualCategory").value;
+
+
+      if (!name || !amount) {
+
+        alert(
+          "Completá todos los datos."
+        );
+
+        return;
+
+      }
+
+
+      addExpense(
+        name,
+        amount,
+        category
+      );
+
+
+      document.getElementById("manualName").value = "";
+      document.getElementById("manualAmount").value = "";
+
+
+      closeModals();
+
+    }
+
+
+    /* =========================================
+       CERRAR AL HACER CLICK AFUERA
+    ========================================= */
+
+    document
+      .querySelectorAll(".modal")
+      .forEach(modal => {
+
+        modal.addEventListener(
+          "click",
+          function(event) {
+
+            if (event.target === modal) {
+
+              closeModals();
+
+            }
+
+          }
+        );
+
+      });
+
+
+    /* =========================================
+       INICIALIZACIÓN
+    ========================================= */
+
+    updateMoney();
+
+  </script>
+
+</body>
+</html>
